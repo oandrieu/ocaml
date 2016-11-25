@@ -32,6 +32,7 @@
         EXTERN  _caml_backtrace_pos: DWORD
         EXTERN  _caml_backtrace_active: DWORD
         EXTERN  _caml_stash_backtrace: PROC
+        EXTERN  _caml_exn_Stack_overflow: DWORD
 
 ; Allocation
 
@@ -242,6 +243,17 @@ L112:
         call    _caml_stash_backtrace
         mov     eax, esi                ; recover exception bucket
         mov     esp, _caml_exception_pointer ; cut the stack
+        pop     _caml_exception_pointer
+        ret
+
+; Raise a Stack_overflow exception from the OS exception handler,
+; do not try to stash the backtrace
+
+        PUBLIC _caml_stack_overflow
+        ALIGN 4
+_caml_stack_overflow:
+        mov     eax, offset _caml_exn_Stack_overflow
+        mov     esp, _caml_exception_pointer
         pop     _caml_exception_pointer
         ret
 

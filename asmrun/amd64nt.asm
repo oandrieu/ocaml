@@ -34,6 +34,7 @@
         EXTRN  caml_backtrace_pos: DWORD
         EXTRN  caml_backtrace_active: DWORD
         EXTRN  caml_stash_backtrace: NEAR
+        EXTRN  caml_exn_Stack_overflow: QWORD
 
         .CODE
 
@@ -346,6 +347,18 @@ L112:
         pop     r14                  ; Recover previous exception handler
         mov     r15, caml_young_ptr ; Reload alloc ptr
         ret
+
+; Raise a Stack_overflow exception from the OS exception handler,
+; do not try to stash the backtrace
+
+        PUBLIC caml_stack_overflow
+        ALIGN 16
+caml_stack_overflow:
+        lea     rax, caml_exn_Stack_overflow
+        mov     rsp, caml_exception_pointer ; cut the stack
+        pop     r14                         ; recover previous exn handler
+        ret                                 ; jump to handler's code
+
 
 ; Callback from C to OCaml
 

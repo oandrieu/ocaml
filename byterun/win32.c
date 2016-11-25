@@ -478,11 +478,13 @@ void caml_signal_thread(void * lpParam)
  * since it determines the stack pointer by calling alloca(): it would
  * try to protect the alternate stack.
  *
- * Finally, we call caml_raise_stack_overflow; it will either call
- * caml_raise_exception which switches back to the normal stack, or
- * call caml_fatal_uncaught_exception which terminates the program
- * quickly.
+ * Finally, we call caml_stack_overflow which will switch back to the
+ * normal stack. This however bypasses the backtrace stashing mechanism
+ * as caml_last_return_address and caml_bottom_of_stack are unreliable.
  */
+CAMLnoreturn_start
+CAMLextern void caml_stack_overflow(void)
+CAMLnoreturn_end;
 
 static uintnat win32_alt_stack[0x80];
 
@@ -505,7 +507,7 @@ static void caml_reset_stack (void *faulting_address)
                   mbi.Protect | PAGE_GUARD, &oldprot);
 
  failed:
-  caml_raise_stack_overflow();
+  caml_stack_overflow();
 }
 
 CAMLextern int caml_is_in_code(void *);
