@@ -561,6 +561,7 @@ static LONG CALLBACK
 
 void caml_win32_overflow_detection()
 {
+  SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
   SetUnhandledExceptionFilter (caml_UnhandledExceptionFilter);
 }
 
