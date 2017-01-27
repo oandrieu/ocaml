@@ -41,6 +41,7 @@ CAMLextern value caml_copy_nativeint (intnat);  /* defined in [ints.c] */
 CAMLextern value caml_alloc_array (value (*funct) (char const *),
                                    char const ** array);
 CAMLextern value caml_alloc_sprintf(const char * format, ...);
+CAMLextern value caml_alloc_sprintf_(const char ** format, ...);
 
 CAMLextern value caml_alloc_with_profinfo (mlsize_t, tag_t, intnat);
 CAMLextern value caml_alloc_small_with_my_or_given_profinfo (

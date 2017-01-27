@@ -81,13 +81,14 @@ CAMLexport value caml_copy_double(double d)
 
 CAMLprim value caml_format_float(value fmt, value arg)
 {
-  value res;
+  CAMLparam2(fmt, arg);
+  CAMLlocal1(res);
   double d = Double_val(arg);
 
 #ifdef HAS_BROKEN_PRINTF
   if (isfinite(d)) {
 #endif
-    res = caml_alloc_sprintf(String_val(fmt), d);
+    res = caml_alloc_sprintf_((const char **) &fmt, d);
 #ifdef HAS_BROKEN_PRINTF
   } else {
     if (isnan(d)) {
@@ -100,7 +101,7 @@ CAMLprim value caml_format_float(value fmt, value arg)
     }
   }
 #endif
-  return res;
+  CAMLreturn(res);
 }
 
 CAMLprim value caml_hexstring_of_float(value arg, value vprec, value vstyle)
