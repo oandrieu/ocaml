@@ -202,16 +202,12 @@ caml_c_call:
         pop     r12
         mov     caml_last_return_address, r12
         mov     caml_bottom_of_stack, rsp
+        sub     rsp, 8                   ; equivalent to push r12
     ; Make the exception handler and alloc ptr available to the C code
         mov     caml_young_ptr, r15
         mov     caml_exception_pointer, r14
     ; Call the function (address in rax)
-        call    rax
-    ; Reload alloc ptr
-        mov     r15, caml_young_ptr
-    ; Return to caller
-        push    r12
-        ret
+        jmp     rax
 
 ; Start the OCaml program
 
