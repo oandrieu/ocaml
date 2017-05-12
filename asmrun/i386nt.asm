@@ -41,6 +41,10 @@
         PUBLIC  _caml_alloc3
         PUBLIC  _caml_allocN
         PUBLIC  _caml_call_gc
+        PUBLIC  _caml_system__code_begin
+_caml_system__code_begin:
+        ret  ; just one instruction, so that debuggers don't display
+             ; caml_system__code_begin instead of caml_call_gc
 
 _caml_call_gc:
     ; Record lowest stack address and return address
@@ -48,8 +52,14 @@ _caml_call_gc:
         mov     _caml_last_return_address, eax
         lea     eax, [esp+4]
         mov     _caml_bottom_of_stack, eax
+L105:
+    ; Touch the stack to trigger a recoverable segfault
+    ; if insufficient space remains
+        sub     esp, 01000h
+        mov     [esp], eax
+        add     esp, 01000h
     ; Save all regs used by the code generator
-L105:   push    ebp
+        push    ebp
         push    edi
         push    esi
         push    edx
@@ -145,6 +155,11 @@ _caml_c_call:
         mov     _caml_last_return_address, edx
         lea     edx, [esp+4]
         mov     _caml_bottom_of_stack, edx
+    ; Touch the stack to trigger a recoverable segfault
+    ; if insufficient space remains
+        sub     esp, 01000h
+        mov     [esp], eax
+        add     esp, 01000h
     ; Call the function (address in %eax)
         jmp     eax
 
@@ -307,6 +322,9 @@ _caml_ml_array_bound_error:
     ; Branch to caml_array_bound_error
         mov     eax, offset _caml_array_bound_error
         jmp     _caml_c_call
+
+	PUBLIC caml_system__code_end
+caml_system__code_end:
 
         .DATA
         PUBLIC  _caml_system__frametable

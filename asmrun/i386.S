@@ -117,6 +117,13 @@
 #define PROFILE_C
 #endif
 
+#if defined(SYS_mingw) || defined (SYS_cygwin)
+  /* Stack probing mustn't be larger than the page size */
+# define STACK_PROBE_SIZE $4096
+#else
+# define STACK_PROBE_SIZE $16384
+#endif
+
 /* PR#6038: GCC and Clang seem to require 16-byte alignment nowadays,
    even if only MacOS X's ABI formally requires it. */
 #define ALIGN_STACK(amount) subl $ amount, %esp ; CFI_ADJUST(amount)
@@ -137,13 +144,11 @@ FUNCTION(caml_call_gc)
         leal    4(%esp), %eax
         movl    %eax, G(caml_bottom_of_stack)
 LBL(105):
-#if !defined(SYS_mingw) && !defined(SYS_cygwin)
     /* Touch the stack to trigger a recoverable segfault
        if insufficient space remains */
-        subl    $16384, %esp
+        subl    STACK_PROBE_SIZE, %esp
         movl    %eax, 0(%esp)
-        addl    $16384, %esp
-#endif
+        addl    STACK_PROBE_SIZE, %esp
     /* Build array of registers, save it into caml_gc_regs */
         pushl   %ebp; CFI_ADJUST(4)
         pushl   %edi; CFI_ADJUST(4)
@@ -263,13 +268,11 @@ FUNCTION(caml_c_call)
         movl    %edx, G(caml_last_return_address)
         leal    4(%esp), %edx
         movl    %edx, G(caml_bottom_of_stack)
-#if !defined(SYS_mingw) && !defined(SYS_cygwin)
     /* Touch the stack to trigger a recoverable segfault
        if insufficient space remains */
-        subl    $16384, %esp
+        subl    STACK_PROBE_SIZE, %esp
         movl    %eax, 0(%esp)
-        addl    $16384, %esp
-#endif
+        addl    STACK_PROBE_SIZE, %esp
     /* Call the function (address in %eax) */
         jmp     *%eax
         CFI_ENDPROC
